@@ -1,10 +1,12 @@
 import functions
 import PySimpleGUI as sg
+import time
 
-
+sg.theme('Darkpurple4')
+clock = sg.Text(time.strftime("%b, %d, %Y, %H:%M:%S"), key='clock')
 label = sg.Text("Type in a to-do")
 input_box = sg.InputText(tooltip="Enter todo", key="todo")
-add_button = sg.Button("Add")
+add_button = sg.Button("Add", size=(10, 1), button_color="pink")
 list_box = sg.Listbox(values=functions.get_todos("todos.txt"), key="todos",
                       enable_events=True, size=[45, 10])
 edit_button = sg.Button("Edit")
@@ -13,6 +15,7 @@ exit_button = sg.Button("Exit")
 
 
 column_layout1 = [
+    [clock],
     [label],
     [input_box, add_button],
     [list_box],
@@ -27,7 +30,8 @@ window = sg.Window("My to-do App", layout=[
 
 
 while True:
-    event, values = window.read()
+    event, values = window.read(timeout=1000)
+    window['clock'].update(value=time.strftime("%b, %d, %Y, %H:%M:%S"))
     print(event)
     print(values)
     print(values["todos"])
@@ -41,15 +45,17 @@ while True:
             window['todos'].update(values=todos)
 
         case "Edit":
-            todo_to_edit = values['todos'][0]
-            new_todo = values['todo']
+            try:
+                todo_to_edit = values['todos'][0]
+                new_todo = values['todo']
 
-            todos = functions.get_todos("todos.txt")
-            index = todos.index(todo_to_edit)
-            todos[index] = new_todo + "\n"
-            functions.write_todos("todos.txt", todos)
-            window['todos'].update(values=todos)
-
+                todos = functions.get_todos("todos.txt")
+                index = todos.index(todo_to_edit)
+                todos[index] = new_todo + "\n"
+                functions.write_todos("todos.txt", todos)
+                window['todos'].update(values=todos)
+            except IndexError:
+                sg.popup("💗please select an item first", font=('palatino linotype', 16))
         case "Complete":
             todo_to_complete = values['todos'][0]
             todos = functions.get_todos("todos.txt")
